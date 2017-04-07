@@ -1,0 +1,133 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          jira
+# Required-Start:    $remote_fs $syslog postgresql
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Initscript for Atlassian jira
+# Description:  Automatically start Atlassian jira when the system starts up.
+#               Provide commands for manually starting and stopping jira.
+### END INIT INFO
+
+
+#origin from internet, heavylig modified by jimmy
+
+# ==================================================================================
+# ==================================================================================
+# ==================================================================================
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+RUNUSER=jira                                                # RUNUSER: The user to run jira as.
+NAME=jira
+VERSION=7.2.4
+ALTASSIAN_INSTALL_DIR="/server/atlassian-jira-$VERSION"  # ALTASSIAN_INSTALL_DIR: The path to the jira installation directory
+DESC="Atlassian $NAME-$VERSION"
+SCRIPTNAME=/etc/init.d/$NAME
+STARTCMD="$ALTASSIAN_INSTALL_DIR/bin/start-jira.sh"
+STOPCMD="$ALTASSIAN_INSTALL_DIR/bin/stop-jira.sh"
+
+# Read configuration variable file if it is present
+#[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Define LSB log_* functions.
+
+# To be replaced by LSB functions
+# Defined here for distributions that don't define
+# log_daemon_msg
+log_daemon_msg () {
+    echo $@
+}
+
+# To be replaced by LSB functions
+# Defined here for distributions that don't define
+# log_end_msg
+log_end_msg () {
+    retval=$1
+    if [ $retval -eq 0 ]; then
+        echo "."
+    else
+        echo " failed!"
+    fi
+    return $retval
+}
+
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+
+
+runonce_user() {
+    if [ "$RUNUSER" != "$USER" ]; then
+        sudo -u "$RUNUSER" $*
+    else
+        $*
+    fi
+}
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+    runonce_user $STARTCMD
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+      runonce_user $STOPCMD
+}
+
+
+case "$1" in
+  start)
+    [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+    do_start
+    case "$?" in
+        0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+        2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+    esac
+    ;;
+  stop)
+    [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+    do_stop
+    case "$?" in
+        0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+        2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+    esac
+    ;;
+  status)
+       ps -aux | grep $NAME && exit 0 || exit $?
+       ;;
+  restart|force-reload)
+    #
+    # If the "reload" option is implemented then remove the
+    # 'force-reload' alias
+    #
+    log_daemon_msg "Restarting $DESC" "$NAME"
+    do_stop
+    case "$?" in
+      0|1)
+        do_start
+        case "$?" in
+            0) log_end_msg 0 ;;
+            1) log_end_msg 1 ;; # Old process is still running
+            *) log_end_msg 1 ;; # Failed to start
+        esac
+        ;;
+      *)
+        # Failed to stop
+        log_end_msg 1
+        ;;
+    esac
+    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+    exit 3
+    ;;
+esac
+
