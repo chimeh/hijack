@@ -18,7 +18,7 @@ if [ $# -gt 2 ];then
     MYSQL_JDBC_FROM=$(realpath $3)
 fi
 if [ $# -gt 3 ];then
-    LANGDIR=$(realpath $3)
+    LANGDIR=$(realpath $4)
    
 fi
 
@@ -122,11 +122,14 @@ popd
 pushd $DATESTR
 if [[ -n $LANGDIR ]];then
     pushd $LANGDIR
-    find $LANGDIR -maxdepth 1 -name "* *"|
-    while read name;do
+    HAVA_RENAME=`find $LANGDIR -maxdepth 1 -name "* *"`
+    if [[ -n $HAVA_RENAME ]];then
+      find $LANGDIR -maxdepth 1 -name "* *"|
+      while read name;do
             na=$(echo $name | tr ' ' '_')
             mv "$name" $na
-    done
+      done
+    fi
     popd
 fi
 
