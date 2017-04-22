@@ -42,10 +42,9 @@ pushd $DATESTR
 
 if [[ ! -z $ATLASSIAN_HASH_FILES ]];then
 	HAVE_HASH_FILE=1
-fi
-if [[ HAVE_HASH_FILE -ne 0 ]];then
 	unzip $ARCHIVE $ATLASSIAN_HASH_FILES -d $DATESTR
 	cp $DATESTR/$ATLASSIAN_HASH_FILES $DATESTR/$ATLASSIAN_HASH_FILES.origin
+fi
     if [[ ! -z $ATLASSIAN_EXTRAS ]];then
     #    echo "$ATLASSIAN_EXTRAS"
 	    unzip $ARCHIVE $ATLASSIAN_EXTRAS -d $DATESTR
@@ -53,13 +52,14 @@ if [[ HAVE_HASH_FILE -ne 0 ]];then
 		cp -v $CKDIR/$(basename $ATLASSIAN_EXTRAS) $DATESTR/$ATLASSIAN_EXTRAS
 		if [[ $? -ne 0 ]];then  exit $?;fi
 		zip -o $ARCHIVE $ATLASSIAN_EXTRAS
-		
+if [[ HAVE_HASH_FILE -ne 0 ]];then
         ATLASSIAN_EXTRAS_MD5=`unzip  -p $ARCHIVE  $ATLASSIAN_EXTRAS | md5sum | awk '{print $1}'`
     	ATLASSIAN_EXTRAS_MD5_LINE="fs.WEB-INF/lib/`basename $ATLASSIAN_EXTRAS`"
     	echo "$ATLASSIAN_EXTRAS_MD5_LINE=$ATLASSIAN_EXTRAS_MD5"
 		perl  -n -e "print if m{^$ATLASSIAN_EXTRAS_MD5_LINE.+}" $DATESTR/$ATLASSIAN_HASH_FILES
 		perl -i -n -e "s@^$ATLASSIAN_EXTRAS_MD5_LINE.+@$ATLASSIAN_EXTRAS_MD5_LINE=$ATLASSIAN_EXTRAS_MD5@;print" $DATESTR/$ATLASSIAN_HASH_FILES
     fi
+fi
     
     if [[ ! -z $ATLASSIAN_UNIVERSAL ]];then
     #    echo "$ATLASSIAN_UNIVERSAL"
@@ -68,13 +68,14 @@ if [[ HAVE_HASH_FILE -ne 0 ]];then
 		cp -v $CKDIR/$(basename $ATLASSIAN_UNIVERSAL) $DATESTR/$ATLASSIAN_UNIVERSAL;
 		if [[ $? -ne 0 ]];then exit $?;fi
 		zip -o $ARCHIVE $ATLASSIAN_UNIVERSAL
-		
+if [[ HAVE_HASH_FILE -ne 0 ]];then
         ATLASSIAN_UNIVERSAL_MD5=`unzip  -p $ARCHIVE  $ATLASSIAN_UNIVERSAL | md5sum | awk '{print $1}'`
     	ATLASSIAN_UNIVERSAL_MD5_LINE="fs.WEB-INF/atlassian-bundled-plugins/`basename $ATLASSIAN_UNIVERSAL`"
     	echo "$ATLASSIAN_UNIVERSAL_MD5_LINE=$ATLASSIAN_UNIVERSAL_MD5"
 		perl  -n -e "print if m{^$ATLASSIAN_UNIVERSAL_MD5_LINE.+}" $DATESTR/$ATLASSIAN_HASH_FILES
 		perl -i -n -e "s@^$ATLASSIAN_UNIVERSAL_MD5_LINE.+@$ATLASSIAN_UNIVERSAL_MD5_LINE=$ATLASSIAN_UNIVERSAL_MD5@;print" $DATESTR/$ATLASSIAN_HASH_FILES
     fi
+fi
     
     if [[ ! -z $ATLASSIAN_EXTRAS_DECODER ]];then
     #    echo "$ATLASSIAN_EXTRAS_DECODER"
@@ -84,7 +85,7 @@ if [[ HAVE_HASH_FILE -ne 0 ]];then
 		cp -v $CKDIR/$(basename $ATLASSIAN_EXTRAS_DECODER) $DATESTR/$ATLASSIAN_EXTRAS_DECODER;
 		if [[ $? -ne 0 ]];then exit $?;fi
 		zip -o $ARCHIVE $ATLASSIAN_EXTRAS_DECODER
-		
+if [[ HAVE_HASH_FILE -ne 0 ]];then
         ATLASSIAN_EXTRAS_DECODER_MD5=`unzip  -p $ARCHIVE  $ATLASSIAN_EXTRAS_DECODER | md5sum | awk '{print $1}'`
     	ATLASSIAN_EXTRAS_DECODER_MD5_LINE="fs.WEB-INF/lib/`basename $ATLASSIAN_EXTRAS_DECODER`"
     	echo "$ATLASSIAN_EXTRAS_DECODER_MD5_LINE=$ATLASSIAN_EXTRAS_DECODER_MD5"
@@ -135,4 +136,4 @@ fi
 
 
 popd
-rm -rf $DATESTR
+#rm -rf $DATESTR
