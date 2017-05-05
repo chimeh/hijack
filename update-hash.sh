@@ -105,7 +105,7 @@ pushd $DATESTR
 #mysql-connector-java-5.1.40-bin.jar
 MYSQL_JDBC_HAVE=`unzip -l $ARCHIVE | egrep "mysql-connector-java-[0-9.]+-bin.jar" | awk '{print $4}'`
 if [[ -z $MYSQL_JDBC_HAVE && -n $MYSQL_JDBC_FROM ]];then
-      HSQLDB_JDBC=`unzip -l $ARCHIVE | egrep "hsqldb-[0-9.]+jar" | awk '{print $4}'`
+      HSQLDB_JDBC=`unzip -l $ARCHIVE | egrep "hsqldb-[0-9.]+jar" | awk '{print $4}'| head -n 1`
 	  MYSQL_JDBC_TO=$(dirname $HSQLDB_JDBC)/$(basename $MYSQL_JDBC_FROM)
 	  # no mysql jdbc, form path
       unzip $ARCHIVE $HSQLDB_JDBC -d $DATESTR
