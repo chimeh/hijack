@@ -1,6 +1,8 @@
 #!/bin/bash
+THIS_SCRIPT=$(realpath $(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)/$(basename ${BASH_SOURCE:-$0}))
+#automatic detection TOPDIR
+SCRIPT_DIR=$(dirname $(realpath ${THIS_SCRIPT}))
 
-CUR_DIR=$(dirname $(realpath $0))
 
 if [ $# -lt 1 ];then
   echo "usage $0 ./pathto/atlassian-xxx.zip [ckdir] [./pathto/mysql-connector-java-x.x.x-bin.jar] [LANGDIR]"
@@ -11,11 +13,13 @@ ARCHIVE=$(realpath $1)
 if [ $# -gt 1 ];then
    CKDIR=$(realpath $2)
   else 
-   CKDIR=$CUR_DIR/xx
+   CKDIR="$SCRIPT_DIR/.ori-cked"
 fi
 echo "CKDIR=$CKDIR"
 if [ $# -gt 2 ];then
     MYSQL_JDBC_FROM=$(realpath $3)
+else
+    MYSQL_JDBC_FROM="${SCRIPT_DIR}/jdbc/mysql-connector-java-5.1.40-bin.jar"
 fi
 if [ $# -gt 3 ];then
     LANGDIR=$(realpath $4)
@@ -35,7 +39,9 @@ HAVE_HASH_FILE=0
 
 ATLASSIAN_EXTRAS=`unzip -l $ARCHIVE | grep "atlassian-extras-[0-9]" | awk '{print $4}'`
 ATLASSIAN_UNIVERSAL=`unzip -l $ARCHIVE | grep atlassian-universal-plugin-manager-plugin- | awk '{print $4}'`
+ATLASSIAN_UNIVERSAL_VER_MAJOR=$(echo ${ATLASSIAN_UNIVERSAL} | perl -n -e '/.+\/atlassian-universal-plugin-manager-plugin-([0-9]).([0-9.-]+).jar$/;print $1')
 ATLASSIAN_EXTRAS_DECODER=`unzip -l $ARCHIVE | grep "atlassian-extras-decoder-[0-9v]" | awk '{print $4}'`
+
 
 ATLASSIAN_HASH_FILES=`unzip -l $ARCHIVE | grep "hash-registry.properties" | awk '{print $4}'`
 pushd $DATESTR
@@ -59,14 +65,14 @@ if [[ HAVE_HASH_FILE -ne 0 ]];then
     fi
 fi
     
-    if [[ ! -z $ATLASSIAN_UNIVERSAL ]];then
+    if [[ ! -z $ATLASSIAN_UNIVERSAL ]] && [[ ! "${ATLASSIAN_UNIVERSAL_VER_MAJOR}" =~ "4" ]];then
     #    echo "$ATLASSIAN_UNIVERSAL"
 		unzip $ARCHIVE $ATLASSIAN_UNIVERSAL -d $DATESTR
 		cp $DATESTR/$ATLASSIAN_UNIVERSAL $DATESTR/$ATLASSIAN_UNIVERSAL.origin
 		cp -v $CKDIR/$(basename $ATLASSIAN_UNIVERSAL) $DATESTR/$ATLASSIAN_UNIVERSAL;
 		if [[ $? -ne 0 ]];then exit $?;fi
 		zip -o $ARCHIVE $ATLASSIAN_UNIVERSAL
-if [[ HAVE_HASH_FILE -ne 0 ]];then
+    if [[ HAVE_HASH_FILE -ne 0 ]];then
         ATLASSIAN_UNIVERSAL_MD5=`unzip  -p $ARCHIVE  $ATLASSIAN_UNIVERSAL | md5sum | awk '{print $1}'`
     	ATLASSIAN_UNIVERSAL_MD5_LINE="fs.WEB-INF/atlassian-bundled-plugins/`basename $ATLASSIAN_UNIVERSAL`"
     	echo "$ATLASSIAN_UNIVERSAL_MD5_LINE=$ATLASSIAN_UNIVERSAL_MD5"
